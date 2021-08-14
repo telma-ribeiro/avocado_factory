@@ -1,0 +1,95 @@
+SENSOR->EASY
+SET search_path TO abacateiros;
+SELECT timestamp AS timestamp, valor AS measurement
+FROM medicoes
+WHERE id_sensor=41 AND timestamp BETWEEN '2021-05-14 19:27:57' AND '2021-05-14 19:33:47'
+
+
+ACTUATOR->EASY
+SET search_path TO abacateiros;
+      SELECT DISTINCT on (atuador.nome) atuador.nome, estado.state, estado.id ,celula.nome AS celula
+      FROM estado INNER JOIN atuador ON (atuador.id = estado.id_atuador) 
+      INNER JOIN configuracao ON (atuador.id=configuracao.id_atuador)  
+      INNER JOIN celula ON (celula.id=configuracao.id_celula)
+ WHERE estado.id >= (SELECT MAX(estado.id) FROM estado WHERE estado.id_atuador=11);
+ 
+ 
+ CONFIGURATION->EASY
+ SET search_path TO abacateiros;
+UPDATE config
+SET id_sensor=11
+WHERE id_celula=( SELECT id_celula FROM config WHERE id_atuador=51);
+UPDATE config
+SET id_sensor=51
+WHERE id_celula=( SELECT id_celula FROM config WHERE id_atuador=11);
+SELECT DISTINCT sensor.nome AS SENSOR, celula.nome AS CELL
+FROM config INNER JOIN sensor ON (sensor.id = config.id_sensor) INNER JOIN celula ON (celula.id=config.id_celula)
+WHERE id_sensor=51 OR id_sensor=11;  
+
+
+CONTROL->EASY
+SET search_path TO abacateiros;
+UPDATE regras
+SET valor=valor+1
+WHERE id=1;
+SELECT regras.id AS Rule, id_celula AS Cell, valor AS Reference, nome AS Sensor
+FROM regras, sensor 
+WHERE nome='SEED1' AND regras.id=1;
+
+
+ENERGY->EASY
+SET search_path TO abacateiros;
+SELECT timestamp AS timestamp, 0.0000055556*valor*220  AS energy
+FROM medicoes
+WHERE id_sensor=61 AND timestamp BETWEEN '2021-05-24 19:38:26' AND '2021-05-24 19:40:19';
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                                      MEDIUM
+ SENSOR->MEDIUM                                                 
+SET search_path TO abacateiros;
+SELECT medicoes.id_sensor, AVG(valor) AS Average, celula.nome AS room
+FROM medicoes INNER JOIN configuracao ON (configuracao.id_sensor = medicoes.id_sensor) INNER JOIN celula ON (celula.id = configuracao.id_celula)
+WHERE timestamp between '2021-05-14 19:16:42' AND '2021-05-14 19:18:25'
+GROUP BY medicoes.id_sensor, celula.nome;
+
+SEGUIDA DE:
+
+SET search_path TO abacateiros;
+SELECT AVG(valor) AS Average, sensor.nome AS room
+FROM medicoes INNER JOIN sensor ON (sensor.id = medicoes.id_sensor)
+WHERE timestamp between '2021-05-14 19:16:42' AND '2021-05-14 19:18:25'
+GROUP BY medicoes.id_sensor, sensor.nome;
+
+
+
+ ACTUATOR->MEDIUM   
+SET search_path TO abacateiros;
+SELECT DISTINCT celula.nome AS room, COUNT(1)-1 AS change
+FROM estado INNER JOIN (configuracao INNER JOIN celula ON (celula.id=configuracao.id_celula)) ON (configuracao.id_atuador=estado.id_atuador)
+GROUP BY estado.id_atuador, celula.nome;
+
+
+CONFIGURATION->MEDIUM   
+SET search_path TO abacateiros;
+SELECT celula.nome AS ROOM, COUNT(DISTINCT configuracao.id_sensor) AS SENSOR_COUNT, 1 AS MOTE_COUNT
+FROM configuracao INNER JOIN celula ON (configuracao.id_celula=celula.id)
+GROUP BY celula.nome;
+
+
+CONTROL->MEDIUM   
+SET search_path TO abacateiros;
+SELECT COUNT(regras.id_celula) AS Rules, regras.id_celula, celula.nome AS Room
+FROM regras INNER JOIN celula ON (celula.id=regras.id_celula)
+GROUP BY regras.id_celula, celula.nome;
+
+
+ ENERGY->MEDIUM   
+SET search_path TO abacateiros;
+SELECT medicoes.id_sensor, celula.nome AS Room, (SUM(medicoes.valor)*0.0000055556*220*0.1544) AS Cost
+FROM medicoes INNER JOIN configuracao ON (medicoes.id_sensor = configuracao.id_sensor) INNER JOIN celula ON (celula.id=configuracao.id_celula)
+WHERE (medicoes.id_sensor=11 OR medicoes.id_sensor=21 OR medicoes.id_sensor=31 OR medicoes.id_sensor=41 OR  medicoes.id_sensor=51) AND timestamp BETWEEN '2021-05-24 19:38:26' AND '2021-05-24 19:40:19'
+GROUP BY medicoes.id_sensor, celula.nome;
+
+                                                      
