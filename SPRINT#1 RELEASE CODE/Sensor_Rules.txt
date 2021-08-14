@@ -1,0 +1,7 @@
+Section1: 
+Section2: AGUA2 > 250 act1_terra5:ON AND TERRA5 > 300 act2_terra5:ON AND TERRA5 > 325 act3_terra5:ON
+Section3: TERRA5 > 125 act1_agua5:ON AND AGUA2 > 225 act2_agua5:ON AND AGUA2 > 325 act3_agua5:ON 
+Section4: TEMP5 < 21.75 act1_temp5:ON AND LIGHT5 < 500 act1_light5:ON AND LIGHT5 < 200 act2_light5:ON
+Section5: HUM5 < 2.5 act1_hum5:ON   
+
+

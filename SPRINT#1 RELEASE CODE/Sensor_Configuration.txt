@@ -1,0 +1,5 @@
+SECTION_1: 
+SECTION_2: AGUA2: act1_terra5, act2_terra5, act3_terra5
+SECTION_3: TERRA5: act1_agua5, act2_agua5, act3_agua5
+SECTION_4: LIGHT5, TEMP5: act1_light5, act2_light5, act1_temp5
+SECTION_5: HUM5: act1_hum5
